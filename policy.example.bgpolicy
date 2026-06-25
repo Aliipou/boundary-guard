@@ -20,6 +20,8 @@ allow observability -> *          # the observer may read anything
 # Blanket rule: the quantum sandbox is research-only (T3). NOTHING in any other
 # layer imports it — this also defeats "spoof into a layer that lacks a forbid".
 forbid *        -> quantum_research : quantum is a research sandbox; nothing in production imports it
-forbid authgate -> banking          : the capability kernel holds no financial state
+# Golden rule: everything depends on AuthGate; AuthGate depends on nothing.
+# AuthGate is the single core / sink — it imports no other layer in the system.
+forbid authgate -> *                : the capability kernel is the sink; it depends on nothing
 forbid *        -> observability    : nothing depends on the observer (dependency is one-way)
 forbid philosophy -> *              : the theory layer imports no implementation

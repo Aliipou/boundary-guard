@@ -85,6 +85,16 @@ class TestAdversarial(unittest.TestCase):
                     f"SPOOFABLE: code placed in a '{layer}'-named dir can import quantum",
                 )
 
+    def test_golden_rule_authgate_depends_on_nothing(self):
+        # "Everything depends on AuthGate; AuthGate depends on nothing."
+        p = Policy.from_file(ROOT / "policy.example.bgpolicy")
+        for layer in ("fdk", "banking", "robotics", "quantum_research", "observability", "philosophy"):
+            with self.subTest(layer=layer):
+                self.assertIsNotNone(
+                    p.is_forbidden("authgate", layer),
+                    f"core leak: authgate must not depend on '{layer}'",
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

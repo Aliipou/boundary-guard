@@ -41,8 +41,10 @@ class TestProfiles(unittest.TestCase):
         self.assertNotIn("banking", restricted.layers)
         # the robotics->quantum forbid survives projection
         self.assertIsNotNone(restricted.is_forbidden("robotics", "quantum_research"))
-        # a forbid touching an invisible layer (authgate->banking) is dropped
-        self.assertIsNone(restricted.is_forbidden("authgate", "banking"))
+        # the golden rule "authgate depends on nothing" survives projection
+        self.assertIsNotNone(restricted.is_forbidden("authgate", "banking"))
+        # a forbid touching an invisible layer (->observability) is dropped
+        self.assertIsNone(restricted.is_forbidden("robotics", "observability"))
 
 
 if __name__ == "__main__":
