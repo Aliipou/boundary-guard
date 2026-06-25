@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "boundary-guard"
+version = "0.1.0"
+description = "Architecture-boundary enforcement for separate repositories that share one philosophy."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Ali Pourrahim" }]
+keywords = ["architecture", "boundaries", "imports", "ci", "governance"]
+dependencies = []
+
+[project.scripts]
+boundary-guard = "boundary_guard.cli:main"
+
+[tool.setuptools]
+packages = ["boundary_guard"]

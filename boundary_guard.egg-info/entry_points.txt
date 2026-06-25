@@ -1,0 +1,2 @@
+[console_scripts]
+boundary-guard = boundary_guard.cli:main
