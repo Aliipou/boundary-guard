@@ -1,0 +1,5 @@
+# Wave 4 tamper lock: changes to CI, policy, or the guard itself require review.
+# Only bites when branch protection requires reviews (see CI_HARDENING.md).
+/.github/                  @Aliipou
+/policy.example.bgpolicy    @Aliipou
+/boundary_guard/            @Aliipou
