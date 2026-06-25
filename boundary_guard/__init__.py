@@ -9,7 +9,7 @@ from .graph import ImportGraph, ImportEdge
 from .enforce import Finding, check
 from .profiles import Profile, restrict_policy
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "__version__",

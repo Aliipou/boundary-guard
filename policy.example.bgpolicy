@@ -17,10 +17,9 @@ allow robotics -> fdk
 allow observability -> *          # the observer may read anything
 
 # hard-forbidden edges (always errors)
-forbid robotics -> quantum_research : no quantum on a real-time, safety-critical control path
-forbid banking  -> quantum_research : the money path is deterministic and replayable; quantum cannot enter it
-forbid fdk      -> quantum_research : the autonomy gate is deterministic; quantum stays in the research sandbox
-forbid authgate -> quantum_research : production core stays classical + PQC; quantum is T3 research only
+# Blanket rule: the quantum sandbox is research-only (T3). NOTHING in any other
+# layer imports it — this also defeats "spoof into a layer that lacks a forbid".
+forbid *        -> quantum_research : quantum is a research sandbox; nothing in production imports it
 forbid authgate -> banking          : the capability kernel holds no financial state
 forbid *        -> observability    : nothing depends on the observer (dependency is one-way)
 forbid philosophy -> *              : the theory layer imports no implementation

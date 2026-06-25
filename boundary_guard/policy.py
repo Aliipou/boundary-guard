@@ -98,6 +98,8 @@ class Policy:
         def known(side: str) -> bool:
             return side == "*" or side in declared
 
+        if ("*", "*") in self.allow:
+            errors.append("allow '* -> *' disables undeclared-edge detection — remove it")
         for s, d in sorted(self.allow):
             if not (known(s) and known(d)):
                 errors.append(f"allow references an undeclared layer: {s} -> {d}")

@@ -30,11 +30,23 @@ class TestRobustness(unittest.TestCase):
             g = ImportGraph.from_sources([tmp], {"a": "a"})
             self.assertEqual(g.layer_edges(), set())
 
-    def test_files_outside_known_layers_ignored(self):
+    def test_unmapped_file_import_of_a_layer_is_captured_as_unscoped(self):
+        # Security: a file outside any declared layer that imports a layer module
+        # must NOT be invisible (that is the laundering vector). It is captured as
+        # an edge from the synthetic "(unscoped)" source.
+        from boundary_guard.graph import UNSCOPED
         with tempfile.TemporaryDirectory() as tmp:
             other = Path(tmp) / "unrelated"
             other.mkdir()
             (other / "m.py").write_text("import b\n", encoding="utf-8")
+            g = ImportGraph.from_sources([tmp], {"a": "a", "b": "b"})
+            self.assertIn((UNSCOPED, "b"), g.layer_edges())
+
+    def test_unmapped_file_not_importing_any_layer_makes_no_edge(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            other = Path(tmp) / "unrelated"
+            other.mkdir()
+            (other / "m.py").write_text("import os\n", encoding="utf-8")
             g = ImportGraph.from_sources([tmp], {"a": "a", "b": "b"})
             self.assertEqual(g.layer_edges(), set())
 

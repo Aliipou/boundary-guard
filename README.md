@@ -65,10 +65,25 @@ forbid fdk -> quantum_research : the autonomy gate is deterministic
 `*` is a wildcard on either side; `forbid` always beats `allow`. A JSON form is
 also accepted for back-compat.
 
+## Security & known limitations
+
+boundary-guard has been adversarially reviewed: dynamic imports, unmapped-module
+laundering, layer-name spoofing, unparseable-file blind spots, and policy
+shadowing are all caught and pinned by tests (`tests/test_adversarial*.py`).
+
+It is static, single-repo analysis, so it **cannot** see cross-repo transitive
+coupling, runtime/`exec`/`subprocess` behavior, computed (non-constant) dynamic
+imports, or non-`.py` sources — and it is a *check*, not access control (CI
+evasion needs branch protection + a required status check). The full attacker
+model, invariants, and the honest list of what it cannot detect are in
+[`THREAT_MODEL.md`](THREAT_MODEL.md). Do not claim coverage beyond it.
+
 ## Adoption
 
 See `ROADMAP.md` for component status and `MIGRATION.md` for how to roll this
 into existing repos additively — a policy, a profile, one CI step, no code change.
+Per `THREAT_MODEL.md`, a guard that can be bypassed is worse than none, so the
+adversarial suite must stay green before propagating into other repos.
 
 ## Develop
 
