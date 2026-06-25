@@ -1,19 +1,20 @@
 # boundary-guard
 
-Enforce architecture boundaries across **separate repositories** that share one
-philosophy. Makes "no coupling" a CI gate, not a hope.
+An **architecture-boundary enforcement framework** for systems split across
+separate repositories that share one philosophy. It makes "no coupling" a CI
+gate, not a hope.
 
-One theory, many isolated systems. The whole point of splitting `authgate`,
-`fdk`, `banking`, `robotics`, and `quantum-research` into different repos is that
-they must **not** reach into each other in the wrong direction. This tool proves
-they don't.
+It lives entirely **outside** the systems it guards: it reads their source,
+builds the import graph, and fails the build when a dependency points the wrong
+way. It never imports, wraps, or runs AuthGate / FDK / Robotics / Banking / QFL.
+**Stdlib only. Zero runtime dependencies.**
 
-## What it does
+## The idea
 
-Maps every `.py` file to a **layer** (by the top-level package it lives in),
-parses its imports, and fails the build if any import crosses a **forbidden
-edge** — e.g. a robot control loop importing quantum research, or the capability
-kernel importing financial state.
+One theory, many isolated systems. The point of splitting `authgate`, `fdk`,
+`banking`, `robotics`, and `quantum-research` into different repos is that they
+must not reach into each other in the wrong direction. boundary-guard proves
+they don't:
 
 ```
 robotics  ->  quantum_research   FORBIDDEN  (no quantum on a real-time safety path)
@@ -21,44 +22,56 @@ authgate  ->  banking            FORBIDDEN  (the kernel holds no money state)
 fdk       ->  authgate           allowed    (fdk is built on top of authgate)
 ```
 
-Stdlib only. No dependencies. Deterministic.
+## Components (priority of engineering value)
+
+1. **Graph Engine** — the cross-layer import graph + cycle detection.
+2. **Policy DSL** — a readable `.bgpolicy` language for layers / allowed direction / forbidden edges.
+3. **CI Enforcement** — `forbidden`, `cycle`, and (in `--strict`) `undeclared` findings; non-zero exit.
+4. **Repository Profiles** — one master policy projected per repo.
+5. **Drift Detection** — baseline + diff; new structural edges flagged early.
+6. **Visualization** — Mermaid / DOT render of the policy.
 
 ## Use
 
 ```bash
-# check one or more source roots against a policy
-python boundary_guard.py path/to/src --policy policy.example.json
+# enforce (CI gate)
+python -m boundary_guard check src --policy policy.example.bgpolicy
+python -m boundary_guard check src --policy policy.example.bgpolicy --strict
 
-# self-test (proves it catches the forbidden edge and ignores the allowed one)
-python selftest.py
+# per-repo, via a profile
+python -m boundary_guard check --policy policy.example.bgpolicy --profile profiles/authrobo.profile.json
+
+# inspect, snapshot, detect drift
+python -m boundary_guard graph    src --policy policy.example.bgpolicy
+python -m boundary_guard baseline src --policy policy.example.bgpolicy --out boundaries.baseline.json
+python -m boundary_guard drift    src --policy policy.example.bgpolicy --baseline boundaries.baseline.json
+
+# visualize
+python -m boundary_guard viz --policy policy.example.bgpolicy            # mermaid
+python -m boundary_guard viz --policy policy.example.bgpolicy --format dot
 ```
 
-Exit code is `1` on any violation, so it drops straight into CI (see
-`.github/workflows/ci.yml`).
-
-## Per-repo adoption
-
-Copy `boundary_guard.py` + a trimmed `policy.json` into each repo, and add a CI
-step that runs it against that repo's source. Each repo only declares the layers
-it can legitimately see. Direction of dependency is one-way and explicit:
+## Policy DSL
 
 ```
-philosophy        (freedom-theory)      ── imports nothing below it
-   ▲
-authgate          (authgate-kernel)     ── classical + PQC, no money, no quantum
-   ▲
-fdk               (freedom-decision-kernel)
-   ▲                         ▲
-banking                   robotics       ── depend on authgate; never the reverse
-                                          ── never on quantum_research or analytics
+layer authgate = authgate
+layer fdk      = fdk
+layer quantum_research = quantum, qkd, qfl
 
-quantum_research  (qfl / qkd)            ── research sandbox, T3, no edge into prod
-observability     (analytics)            ── observes everything, controls nothing
+allow  fdk -> authgate
+forbid fdk -> quantum_research : the autonomy gate is deterministic
 ```
 
-## Policy format
+`*` is a wildcard on either side; `forbid` always beats `allow`. A JSON form is
+also accepted for back-compat.
 
-`policy.example.json` — `layers` map each layer to the import roots that belong
-to it; `forbidden` lists one-way edges that must never exist, each with a `why`
-that gets printed on violation. `"to": "*"` forbids importing *any* other layer
-(used for the pure philosophy layer).
+## Adoption
+
+See `ROADMAP.md` for component status and `MIGRATION.md` for how to roll this
+into existing repos additively — a policy, a profile, one CI step, no code change.
+
+## Develop
+
+```bash
+python -m unittest discover -s tests -t .
+```

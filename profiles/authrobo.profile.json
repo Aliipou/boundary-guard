@@ -1,0 +1,6 @@
+{
+  "_comment": "Per-repo profile for the robotics repo. It may see authgate and fdk (it depends on them) and quantum_research (only so the guard can forbid the edge). It does NOT see banking. Master policy is projected onto these layers.",
+  "repo": "authrobo",
+  "roots": ["."],
+  "visible_layers": ["robotics", "authgate", "fdk", "quantum_research", "observability"]
+}

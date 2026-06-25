@@ -3,12 +3,27 @@ name: ci
 on: [push, pull_request]
 
 jobs:
-  selftest:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Self-test the guard
-        run: python selftest.py
+      - name: Unit tests (stdlib unittest, no deps)
+        run: python -m unittest discover -s tests -t .
+
+  self-enforce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: boundary-guard enforces its own demo (must catch the violation)
+        run: |
+          if python -m boundary_guard check examples/monorepo-demo --policy policy.example.bgpolicy; then
+            echo "expected a boundary violation in the demo, got none"; exit 1
+          else
+            echo "demo violation correctly caught"
+          fi
