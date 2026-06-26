@@ -4,6 +4,10 @@ An **architecture-boundary enforcement framework** for systems split across
 separate repositories that share one philosophy. It makes "no coupling" a CI
 gate, not a hope.
 
+> **Role in the ecosystem:** a Tier-1 *plugin / architecture enforcer* for the
+> AuthGate stack. Dev/CI only — never imported into any runtime. Everything
+> depends on AuthGate; boundary-guard depends on nothing it guards.
+
 It lives entirely **outside** the systems it guards: it reads their source,
 builds the import graph, and fails the build when a dependency points the wrong
 way. It never imports, wraps, or runs AuthGate / FDK / Robotics / Banking / QFL.
