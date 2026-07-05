@@ -21,7 +21,7 @@ class Profile:
     visible_layers: list[str] = field(default_factory=list)
 
     @classmethod
-    def from_file(cls, path) -> "Profile":
+    def from_file(cls, path) -> Profile:
         d = json.loads(Path(path).read_text(encoding="utf-8"))
         return cls(d["repo"], d.get("roots", ["."]), d.get("visible_layers", []))
 

@@ -13,9 +13,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import __version__
+from . import __version__, enforce, profiles, viz
 from . import drift as drift_mod
-from . import enforce, profiles, viz
 from .graph import ImportGraph
 from .policy import Policy
 
@@ -25,12 +24,12 @@ def _load_policy(path) -> Policy:
         policy = Policy.from_file(path)
     except (OSError, ValueError) as e:
         print(f"error: cannot load policy {path!r}: {e}", file=sys.stderr)
-        raise SystemExit(2)
+        raise SystemExit(2) from e
     errors = policy.validate()
     if errors:
         print(f"INVALID POLICY ({path}):", file=sys.stderr)
-        for e in errors:
-            print(f"  - {e}", file=sys.stderr)
+        for err in errors:
+            print(f"  - {err}", file=sys.stderr)
         raise SystemExit(2)
     return policy
 
@@ -113,11 +112,29 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--policy", required=True)
         sp.add_argument("--profile")
 
-    c = sub.add_parser("check"); add_common(c); c.add_argument("--strict", action="store_true"); c.set_defaults(func=cmd_check)
-    g = sub.add_parser("graph"); add_common(g); g.set_defaults(func=cmd_graph)
-    b = sub.add_parser("baseline"); add_common(b); b.add_argument("--out", default="boundaries.baseline.json"); b.set_defaults(func=cmd_baseline)
-    d = sub.add_parser("drift"); add_common(d); d.add_argument("--baseline", default="boundaries.baseline.json"); d.set_defaults(func=cmd_drift)
-    v = sub.add_parser("viz"); v.add_argument("--policy", required=True); v.add_argument("--format", choices=["mermaid", "dot"], default="mermaid"); v.set_defaults(func=cmd_viz, paths=[], profile=None)
+    c = sub.add_parser("check")
+    add_common(c)
+    c.add_argument("--strict", action="store_true")
+    c.set_defaults(func=cmd_check)
+
+    g = sub.add_parser("graph")
+    add_common(g)
+    g.set_defaults(func=cmd_graph)
+
+    b = sub.add_parser("baseline")
+    add_common(b)
+    b.add_argument("--out", default="boundaries.baseline.json")
+    b.set_defaults(func=cmd_baseline)
+
+    d = sub.add_parser("drift")
+    add_common(d)
+    d.add_argument("--baseline", default="boundaries.baseline.json")
+    d.set_defaults(func=cmd_drift)
+
+    v = sub.add_parser("viz")
+    v.add_argument("--policy", required=True)
+    v.add_argument("--format", choices=["mermaid", "dot"], default="mermaid")
+    v.set_defaults(func=cmd_viz, paths=[], profile=None)
     return p
 
 

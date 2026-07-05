@@ -11,7 +11,6 @@ Two kinds of tests here:
 Principle: a system that hasn't broken itself has no right to enforce on another.
 """
 
-import os
 import tempfile
 import textwrap
 import unittest

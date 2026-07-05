@@ -89,7 +89,7 @@ class ImportGraph:
         self.skipped = list(skipped or [])  # files that could not be parsed
 
     @classmethod
-    def from_sources(cls, paths, root_to_layer: dict[str, str]) -> "ImportGraph":
+    def from_sources(cls, paths, root_to_layer: dict[str, str]) -> ImportGraph:
         edges: list[ImportEdge] = []
         skipped: list[str] = []
         for root in paths:

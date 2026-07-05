@@ -34,20 +34,20 @@ class Policy:
     forbid: dict[tuple[str, str], str]    # edge -> reason
 
     @classmethod
-    def from_file(cls, path) -> "Policy":
+    def from_file(cls, path) -> Policy:
         p = Path(path)
         text = p.read_text(encoding="utf-8")
         return cls.from_json(json.loads(text)) if p.suffix == ".json" else cls.from_dsl(text)
 
     @classmethod
-    def from_json(cls, data: dict) -> "Policy":
+    def from_json(cls, data: dict) -> Policy:
         layers = {k: list(v) for k, v in data["layers"].items()}
         allow = {(r["from"], r["to"]) for r in data.get("allow", [])}
         forbid = {(r["from"], r["to"]): r.get("why", "") for r in data.get("forbidden", [])}
         return cls(layers, _roots(layers), allow, forbid)
 
     @classmethod
-    def from_dsl(cls, text: str) -> "Policy":
+    def from_dsl(cls, text: str) -> Policy:
         layers: dict[str, list[str]] = {}
         allow: set[tuple[str, str]] = set()
         forbid: dict[tuple[str, str], str] = {}
