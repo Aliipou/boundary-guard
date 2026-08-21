@@ -1,5 +1,7 @@
 # boundary-guard
 
+**Live (graph):** [https://ali-boundary-guard.vercel.app](https://ali-boundary-guard.vercel.app)
+
 An **architecture-boundary enforcement framework** for systems split across
 separate repositories that share one philosophy. It makes "no coupling" a CI
 gate, not a hope.
